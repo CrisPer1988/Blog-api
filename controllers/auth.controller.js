@@ -3,10 +3,14 @@ const catchAsync = require('../utils/catchAsync');
 const bcrypt = require("bcryptjs")
 const generateJWT = require('../utils/jwt');
 const AppError = require('../utils/appError');
-
+const {ref, uploadBytes} = require("firebase/storage")
+const {storage} = require("../utils/firebase")
 
 exports.signup = catchAsync(async (req, res, next) => {
   const { name, email, password, role } = req.body;
+
+  const imgRef = ref(storage, `users/${Date.now()}-${req.file.originalname}`)
+  const imgUploaded = await uploadBytes(imgRef, req.file.buffer)
 
   const salt = await bcrypt.genSalt(12)
   const encryptedPassword = await bcrypt.hash(password, salt)
@@ -15,7 +19,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     name: name.toLowerCase(),
     email: email.toLowerCase(),
     password: encryptedPassword, 
-    role
+    role,
+    profileImgUrl: imgUploaded.metadata.fullPath
   });
  
   const token = await generateJWT(user.id)
@@ -88,4 +93,21 @@ exports.updatePassword = catchAsync(async(req, res, next) => {
     message: "The user password was update successfully!"
   })
 
+})
+
+exports.renew = catchAsync(async(req, res, next) => {
+  const {sessionUser} = req
+
+  const token = await generateJWT(id)
+
+  return res.statu(200).json({
+    status: "succes",
+    token,
+    user: {
+      id: sessionUser.id,
+      name: sessionUser.name,
+      email: sessionUser.email,
+      role: sessionUser.role
+    }
+  })
 })

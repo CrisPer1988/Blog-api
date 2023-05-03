@@ -11,9 +11,8 @@ exports.protect = catchAsync(async(req, res, next) => {
     if(req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
         token = req.headers.authorization.split(" ")[1]
     }
-
+    console.log(token);
     //validar si existe el token
-
     if(!token) {
         return next(
             new AppError("You are not logged in!. Please log in to get access", 401)
@@ -39,13 +38,36 @@ exports.protect = catchAsync(async(req, res, next) => {
     }
 
     if(user.passwordChangedAt) {
-        const changedTimeStamp = ""
-    }
-
+        const changedTimeStamp = parseInt(user.passwordChangedAt.getTime() / 1000, 10);
     
+        if(decoded.iat < changedTimeStamp){
+            return next(new AppError("User recently changed password!, plaese login again", 401))
+        }
+    
+    }
 
     req.sessionUser = user
     next()
 })
+
+exports.protectAccountOwner = catchAsync(async(req, res, next) => {
+    const {user, sessionUser} = req
+
+    if(user.id !== sessionUser.id) {
+        return next(new AppError("you do not own this account", 401))
+    }
+
+    next()
+})
+
+exports.restrictTo = (...roles) => {
+    return (req, res, next) => {
+        if(!roles.includes(req.sessionUser.role)){
+            return next(new AppError("You do not have permission to perform this action", 403))
+        }
+
+        next()
+    }
+}
 
  

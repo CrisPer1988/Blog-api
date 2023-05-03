@@ -54,3 +54,25 @@ exports.createUserValidation = [
         .isLength({min: 8}).withMessage("Password must be at least 8 characters long"),
         validFields
     ]
+
+    exports.createPostValidation = [
+        body("title")
+        .notEmpty().withMessage("The title is required"),
+        body("content")
+        .notEmpty().withMessage("The content is required"),
+        validFields
+    ]
+
+    exports.updatePostValidation = [
+        body("title")
+        .notEmpty().withMessage("The title is required"),
+        body("content")
+        .notEmpty().withMessage("The content is required"),
+        validFields
+    ]
+
+    exports.validContentComment = [
+        body("text")
+        .notEmpty().withMessage("The text is required"),
+        validFields
+    ]

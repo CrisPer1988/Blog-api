@@ -3,16 +3,24 @@ const express = require('express');
 
 //middlewares
 const validations = require("../middlewares/validations.middleware")
-
+const authMiddleware = require("../middlewares/auth.middleware")
 //controllers
 const authController = require('../controllers/auth.controller');
+const {upload} = require("../utils/multer")
 
 const router = express.Router();
 
-router.post('/signup', validations.createUserValidation, authController.signup
+router.post('/signup',
+upload.single("profileImgUrl"), 
+validations.createUserValidation, 
+authController.signup
 );
 
-router.post("/login", validations.loginUserValidation, authController.login)
+router.post("/login", 
+validations.loginUserValidation, 
+authController.login)
 
+router.use(authMiddleware.protect)
+router.get("/renew", authController.renew)
 
 module.exports = router

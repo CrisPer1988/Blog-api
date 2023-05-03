@@ -23,14 +23,17 @@ router
 .patch(
     userMeddleware.validIfExistUser, 
     validationMiddleware.updateUserValidation,
+    authMiddleware.protectAccountOwner,
     userController.update)
 .delete(
     userMeddleware.validIfExistUser, 
+    authMiddleware.restrictTo("admin"),
     userController.delete)
 
 router.patch("/password/:id", 
 validationMiddleware.updatedPasswordValidation,
-userMeddleware.validIfExistUser, 
+userMeddleware.validIfExistUser,
+authMiddleware.protectAccountOwner, 
 authController.updatePassword)
 
 module.exports = router;
